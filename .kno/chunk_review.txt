@@ -1,0 +1,164 @@
+
+=== File: INSTALLATION.md ===
+
+-- Chunk 1 --
+// /app/repos/repo_7/repos/repo_0/INSTALLATION.md:1-37
+# Installation Guide for Cursor Auto Resume
+
+This guide provides step-by-step instructions for setting up the Cursor Auto Resume tool.
+
+## Installation Steps
+
+1. Open Cursor IDE
+2. Click "Help" in the menu bar
+3. Select "Toggle Developer Tools"
+4. Click the "Console" tab at the top
+5. Copy the entire code from [cursor-auto-resume.js](cursor-auto-resume.js)
+6. Paste it into the console
+7. Press Enter to run it
+8. Close DevTools by clicking the X in the corner (optional)
+9. A small button will appear in the bottom-right corner showing the tool is active
+
+## Troubleshooting
+
+### Nothing happens when I run the script
+- Check if there are any errors in the Console tab
+- Make sure you're running it in Cursor IDE, not another window
+- Try refreshing Cursor and running the script again
+
+### The indicator appears but doesn't click the "resume" link
+- The script looks for specific text patterns. If Cursor changes these patterns, the script may need updating
+- Check if the rate limit message contains "stop the agent after 25 tool calls" or similar text
+
+### The indicator disappears after a while
+- The indicator is attached to the current page. If Cursor refreshes or navigates, you'll need to run the script again
+
+## Uninstalling
+
+Close and reopen Cursor IDE.
+
+## Next Steps
+
+For more advanced usage and customization options, check the [README.md](README.md) file. 
+
+=== File: README.md ===
+
+-- Chunk 1 --
+// /app/repos/repo_7/repos/repo_0/README.md:1-79
+# Cursor Auto Resume
+
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)
+
+A simple tool that automatically clicks the "resume the conversation" link when Cursor IDE hits its API rate limits.
+
+## Important Note on Usage
+
+This tool is created with the intention of helping developers maintain their workflow efficiency while using Cursor IDE. It is designed to automate a manual action that Cursor explicitly allows (clicking the "resume conversation" link) and does not attempt to bypass or circumvent any actual rate limits or security measures.
+
+We respect Cursor's services and their need for rate limiting. This tool:
+- Only automates an action that users are explicitly allowed to perform
+- Maintains the same cooldown periods as manual clicking
+- Does not attempt to bypass actual API limits or quotas
+- Simply reduces the manual interruption of having to click the resume link
+
+The goal is to enhance developer productivity while working within Cursor's intended usage patterns.
+
+## Why This Tool Exists
+
+When using Cursor's AI features extensively during development, you often hit rate limits after about 25 tool calls. Normally, you'd see a message like this:
+
+```
+Note: we default stop the agent after 25 tool calls. You can resume the conversation.
+```
+
+This tool automatically detects this message and clicks the "resume the conversation" link for you, allowing you to maintain focus on your development tasks without manual interruption.
+
+## Features
+
+- **Auto-click**: Automatically clicks the "resume the conversation" link when rate limits appear
+- **Anti-spam**: 3-second cooldown between clicks to prevent issues
+
+## How to Use
+
+1. In Cursor, click "Help" in the menu bar and select "Toggle Developer Tools"
+2. Click the "Console" tab
+3. Copy the entire code from [cursor-auto-resume.js](cursor-auto-resume.js)
+4. Paste it into the console and press Enter
+5. Close DevTools by clicking the X in the corner (optional)
+
+The script will now automatically click the "resume the conversation" link whenever it appears.
+
+## How It Works
+
+The script:
+
+1. Monitors the page for specific rate limit messages
+2. When found, looks for the exact "resume the conversation" link
+3. Clicks the link automatically (with a 3-second cooldown)
+
+## FAQ
+
+### Is this safe to use?
+Yes, the script only runs in your Cursor IDE and only clicks the specific "resume the conversation" link when rate limits are hit. It doesn't modify any core functionality or bypass any security measures.
+
+### Will this work with future versions of Cursor?
+As long as Cursor continues to use similar rate limit messages and "resume the conversation" links, the script should continue to work. If Cursor's interface changes, we'll update the tool to maintain compatibility while respecting their service.
+
+### How do I disable it?
+Close and reopen Cursor IDE, or refresh the window.
+
+### Does this bypass Cursor's rate limits?
+No. This tool only automates clicking the "resume the conversation" link that Cursor explicitly provides. It respects all cooldown periods and doesn't bypass any actual API limits. It simply automates an action that users are already permitted to perform manually.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a pull request. When contributing, please maintain the tool's core principle of respecting Cursor's service while helping developers be more productive.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request 
+
+=== File: cursor-auto-resume.min.js ===
+
+-- Chunk 1 --
+// cursor-auto-resume.min.js:1-1
+function e(){const e=Date.now();if(e-t<3e3)return;const n=document.querySelectorAll("body *");for(const o of n)if(o&&o.textContent&&(o.textContent.includes("stop the agent after 25 tool calls")||o.textContent.includes("Note: we default stop"))){const n=o.querySelectorAll('a, span.markdown-link, [role="link"], [data-link]');for(const o of n)if("resume the conversation"===o.textContent.trim())return console.log('Clicking "resume the conversation" link'),o.click(),void(t=e)}}
+
+=== File: cursor-auto-resume.js ===
+
+-- Chunk 1 --
+// cursor-auto-resume.js:9-35
+function clickResumeLink() {
+        // Prevent clicking too frequently (3 second cooldown)
+        const now = Date.now();
+        if (now - lastClickTime < 3000) return;
+        
+        // Find elements with rate limit text
+        const elements = document.querySelectorAll('body *');
+        for (const el of elements) {
+            if (!el || !el.textContent) continue;
+            
+            // Check if element contains rate limit text
+            if (el.textContent.includes('stop the agent after 25 tool calls') || 
+                el.textContent.includes('Note: we default stop')) {
+                
+                // Find the resume link inside this element
+                const links = el.querySelectorAll('a, span.markdown-link, [role="link"], [data-link]');
+                for (const link of links) {
+                    if (link.textContent.trim() === 'resume the conversation') {
+                        console.log('Clicking "resume the conversation" link');
+                        link.click();
+                        lastClickTime = now;
+                        return;
+                    }
+                }
+            }
+        }
+    }
