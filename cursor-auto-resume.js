@@ -32,9 +32,24 @@
         // Prevent clicking too frequently (3 second cooldown)
         if (now - lastClickTime < 3000) return;
         
-        // --- Scenario 1: "stop the agent after..." ---
+        // --- Scenario 1: "stop the agent after..." - Updated approach ---
+        // First try to find the markdown section with the data-markdown-raw attribute
+        const markdownSection = document.querySelector('section[data-markdown-raw*="stop the agent after"]');
+        
+        if (markdownSection) {
+            // Look for the resume link within this section
+            const resumeLink = markdownSection.querySelector('span.markdown-link[data-link*="composer.resumeCurrentChat"]');
+            if (resumeLink && resumeLink.textContent.trim() === 'resume the conversation') {
+                console.log('Clicking "resume the conversation" link (markdown section)');
+                resumeLink.click();
+                lastClickTime = now;
+                return;
+            }
+        }
+        
+        // Fallback: Original XPath approach with corrected text patterns
         const toolLimitXpath = document.evaluate(
-            "//div[contains(@class, 'composer-bar')]//text()[contains(., 'stop the agent after') or contains(., 'Note: we default stop')]",
+            "//text()[contains(., 'stop the agent after') or contains(., 'Note: By default, we stop')]",
             document,
             null,
             XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
@@ -51,15 +66,16 @@
             const text = el.textContent;
             const hasRateLimitText = (
                 /stop the agent after \d+ tool calls/i.test(text) ||
-                text.includes('Note: we default stop')
+                text.includes('Note: By default, we stop')
             );
             
             if (hasRateLimitText) {
-                // Find the resume link inside this element
-                const links = el.querySelectorAll('a, span.markdown-link, [role="link"], [data-link]');
+                // Find the resume link inside this element or its parent section
+                const section = el.closest('section') || el;
+                const links = section.querySelectorAll('a, span.markdown-link, [role="link"], [data-link]');
                 for (const link of links) {
                     if (link.textContent.trim() === 'resume the conversation') {
-                        console.log('Clicking "resume the conversation" link');
+                        console.log('Clicking "resume the conversation" link (fallback)');
                         link.click();
                         lastClickTime = now;
                         return; // Exit after successful click
